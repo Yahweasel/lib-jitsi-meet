@@ -39,6 +39,8 @@ import * as ConnectionQualityEvents
 import * as E2ePingEvents from './service/e2eping/E2ePingEvents';
 import { createGetUserMediaEvent } from './service/statistics/AnalyticsEvents';
 
+import JitsiLocalTrack from './modules/RTC/JitsiLocalTrack.js';
+
 const logger = Logger.getLogger(__filename);
 
 /**
@@ -106,6 +108,7 @@ export default _mergeNamespaceAndModule({
     version: '{#COMMIT_HASH#}',
 
     JitsiConnection,
+    JitsiLocalTrack,
 
     /**
      * {@code ProxyConnectionService} is used to connect a remote peer to a

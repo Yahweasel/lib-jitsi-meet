@@ -403,24 +403,6 @@ export default class JitsiLocalTrack extends JitsiTrack {
 
         this._setEffectInProgress = true;
 
-        if (browser.usesUnifiedPlan()) {
-            this._switchStreamEffect(effect);
-            if (this.isVideoTrack()) {
-                this.containers.forEach(cont => RTCUtils.attachMediaStream(cont, this.stream));
-            }
-
-            return conference.replaceTrack(this, this)
-                .then(() => {
-                    this._setEffectInProgress = false;
-                })
-                .catch(error => {
-                    this._setEffectInProgress = false;
-                    this._switchStreamEffect();
-                    logger.error('Failed to switch to the new stream!', error);
-                    throw error;
-                });
-        }
-
         // TODO: Create new JingleSessionPC method for replacing a stream in JitsiLocalTrack without offer answer.
         return conference.removeTrack(this)
             .then(() => {
@@ -583,8 +565,10 @@ export default class JitsiLocalTrack extends JitsiTrack {
         }
 
         return promise
-            .then(() => this._sendMuteStatus(muted))
-            .then(() => this.emit(TRACK_MUTE_CHANGED, this));
+            .then(() => {
+                this._sendMuteStatus(muted);
+                this.emit(TRACK_MUTE_CHANGED, this);
+            });
     }
 
     /**
@@ -637,19 +621,15 @@ export default class JitsiLocalTrack extends JitsiTrack {
      *
      * @param {boolean} mute - If track is muted.
      * @private
-     * @returns {Promise}
+     * @returns {void}
      */
     _sendMuteStatus(mute) {
-        if (!this.conference || !this.conference.room) {
-            return Promise.resolve();
-        }
-
-        return new Promise(resolve => {
+        if (this.conference && this.conference.room) {
             this.conference.room[
                 this.isAudioTrack()
                     ? 'setAudioMute'
-                    : 'setVideoMute'](mute, resolve);
-        });
+                    : 'setVideoMute'](mute);
+        }
     }
 
     /**

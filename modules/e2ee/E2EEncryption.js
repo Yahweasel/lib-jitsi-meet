@@ -31,7 +31,6 @@ export class E2EEncryption {
 
         this._conferenceJoined = false;
         this._enabled = false;
-        this._initialized = false;
         this._key = undefined;
         this._enabling = undefined;
 
@@ -97,9 +96,10 @@ export class E2EEncryption {
      * @returns {boolean}
      */
     static isSupported(config) {
-        return browser.supportsInsertableStreams()
-            && OlmAdapter.isSupported()
-            && !(config.testing && config.testing.disableE2EE);
+        return !(config.testing && config.testing.disableE2EE)
+            && (browser.supportsInsertableStreams()
+                || (config.enableEncodedTransformSupport && browser.supportsEncodedTransform()))
+            && OlmAdapter.isSupported();
     }
 
     /**
@@ -130,19 +130,16 @@ export class E2EEncryption {
 
         if (enabled) {
             await this._olmAdapter.initSessions();
+        } else {
+            for (const participant of this.conference.getParticipants()) {
+                this._e2eeCtx.cleanup(participant.getId());
+            }
+            this._olmAdapter.clearAllParticipantsSessions();
         }
 
         this.conference.setLocalParticipantProperty('e2ee.enabled', enabled);
 
-        if (!this._initialized && enabled) {
-            // Need to re-create the peerconnections in order to apply the insertable streams constraint.
-            // TODO: this was necessary due to some audio issues when indertable streams are used
-            // even though encryption is not performed. This should be fixed in the browser eventually.
-            // https://bugs.chromium.org/p/chromium/issues/detail?id=1103280
-            this.conference._restartMediaSessions();
-
-            this._initialized = true;
-        }
+        this.conference._restartMediaSessions();
 
         // Generate a random key in case we are enabling.
         this._key = enabled ? this._generateKey() : false;

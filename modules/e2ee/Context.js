@@ -207,6 +207,7 @@ export class Context {
     async _decryptFrame(
             encodedFrame,
             keyIndex,
+            initialKey = undefined,
             ratchetCount = 0) {
 
         const { encryptionKey } = this._cryptoKeyRing[keyIndex];
@@ -250,8 +251,6 @@ export class Context {
 
             encodedFrame.data = newData;
         } catch (error) {
-            console.error(error);
-
             if (ratchetCount < RATCHET_WINDOW_SIZE) {
                 material = await importKey(await ratchet(material));
 
@@ -262,20 +261,19 @@ export class Context {
                 return await this._decryptFrame(
                     encodedFrame,
                     keyIndex,
+                    initialKey || this._cryptoKeyRing[this._currentKeyIndex],
                     ratchetCount + 1);
             }
 
+            /*
+               Since the key it is first send and only afterwards actually used for encrypting, there were
+               situations when the decrypting failed due to the fact that the received frame was not encrypted
+               yet and ratcheting, of course, did not solve the problem. So if we fail RATCHET_WINDOW_SIZE times,
+               we come back to the initial key.
+            */
+            this._setKeys(initialKey);
+
             // TODO: notify the application about error status.
-
-            // TODO: For video we need a better strategy since we do not want to based any
-            // non-error frames on a garbage keyframe.
-            if (encodedFrame.type === undefined) { // audio, replace with silence.
-                const newData = new ArrayBuffer(3);
-                const newUint8 = new Uint8Array(newData);
-
-                newUint8.set([ 0xd8, 0xff, 0xfe ]); // opus silence frame.
-                encodedFrame.data = newData;
-            }
         }
 
         return encodedFrame;

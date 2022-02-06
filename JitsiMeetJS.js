@@ -1,6 +1,4 @@
-/* global __filename */
-
-import Logger from 'jitsi-meet-logger';
+import Logger from '@jitsi/logger';
 
 import * as JitsiConferenceErrors from './JitsiConferenceErrors';
 import * as JitsiConferenceEvents from './JitsiConferenceEvents';
@@ -151,9 +149,7 @@ export default _mergeNamespaceAndModule({
         Statistics.init(options);
 
         // Configure the feature flags.
-        FeatureFlags.init({
-            sourceNameSignaling: options.sourceNameSignaling
-        });
+        FeatureFlags.init(options.flags || { });
 
         // Initialize global window.connectionTimes
         // FIXME do not use 'window'

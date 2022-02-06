@@ -1,4 +1,4 @@
-import { getLogger } from 'jitsi-meet-logger';
+import { getLogger } from '@jitsi/logger';
 import transform from 'sdp-transform';
 
 import MediaDirection from '../../service/RTC/MediaDirection';
@@ -124,7 +124,7 @@ export class TPCUtils {
                 group.ssrcs
                     .split(' ')
                     .filter(Boolean)
-                    .forEach(ssrc => ssrcs.add(ssrc)),
+                    .forEach(ssrc => ssrcs.add(ssrc))
             );
 
             ssrcs.forEach(ssrc => {

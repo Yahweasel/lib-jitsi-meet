@@ -1,6 +1,4 @@
-/* global __filename */
-
-import { getLogger } from 'jitsi-meet-logger';
+import { getLogger } from '@jitsi/logger';
 
 import MediaDirection from '../../service/RTC/MediaDirection';
 import * as MediaType from '../../service/RTC/MediaType';
@@ -60,7 +58,7 @@ export default class LocalSdpMunger {
                     + 'Strange things may happen !', localVideos);
         }
 
-        const videoMLine = transformer.selectMedia('video');
+        const videoMLine = transformer.selectMedia(MediaType.VIDEO)?.[0];
 
         if (!videoMLine) {
             logger.debug(
@@ -307,14 +305,14 @@ export default class LocalSdpMunger {
         }
 
         const transformer = new SdpTransformWrap(sessionDesc.sdp);
-        const audioMLine = transformer.selectMedia('audio');
+        const audioMLine = transformer.selectMedia(MediaType.AUDIO)?.[0];
 
         if (audioMLine) {
             this._transformMediaIdentifiers(audioMLine);
             this._injectSourceNames(audioMLine);
         }
 
-        const videoMLine = transformer.selectMedia('video');
+        const videoMLine = transformer.selectMedia(MediaType.VIDEO)?.[0];
 
         if (videoMLine) {
             this._transformMediaIdentifiers(videoMLine);

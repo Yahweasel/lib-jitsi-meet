@@ -1,6 +1,4 @@
-/* global __filename */
-
-import { getLogger } from 'jitsi-meet-logger';
+import { getLogger } from '@jitsi/logger';
 import { Strophe } from 'strophe.js';
 
 import * as JitsiConferenceErrors from './JitsiConferenceErrors';
@@ -251,6 +249,10 @@ JitsiConferenceEventManager.prototype.setupChatRoomListeners = function() {
         JitsiConferenceEvents.CONFERENCE_ERROR,
         JitsiConferenceErrors.CHAT_ERROR);
 
+    this.chatRoomForwarder.forward(XMPPEvents.SETTINGS_ERROR_RECEIVED,
+        JitsiConferenceEvents.CONFERENCE_ERROR,
+        JitsiConferenceErrors.SETTINGS_ERROR);
+
     this.chatRoomForwarder.forward(XMPPEvents.FOCUS_DISCONNECTED,
         JitsiConferenceEvents.CONFERENCE_FAILED,
         JitsiConferenceErrors.FOCUS_DISCONNECTED);
@@ -484,6 +486,12 @@ JitsiConferenceEventManager.prototype.setupChatRoomListeners = function() {
                 conference.statistics.sendAddIceCandidateFailed(e, pc);
             });
     }
+
+    // Breakout rooms.
+    this.chatRoomForwarder.forward(XMPPEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM,
+        JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM);
+    this.chatRoomForwarder.forward(XMPPEvents.BREAKOUT_ROOMS_UPDATED,
+        JitsiConferenceEvents.BREAKOUT_ROOMS_UPDATED);
 };
 
 /**
@@ -784,7 +792,7 @@ JitsiConferenceEventManager.prototype.setupStatisticsListeners = function() {
                     return;
                 }
 
-                track._onByteSentStatsReceived(tpc, stats[ssrc]);
+                track.onByteSentStatsReceived(tpc, stats[ssrc]);
             });
         });
     }

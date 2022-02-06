@@ -1,6 +1,4 @@
-/* global __filename */
-
-import { getLogger } from 'jitsi-meet-logger';
+import { getLogger } from '@jitsi/logger';
 import { Strophe } from 'strophe.js';
 
 import * as MediaType from '../../service/RTC/MediaType';
@@ -54,6 +52,16 @@ export default class SignalingLayerImpl extends SignalingLayer {
          * @private
          */
         this._remoteSourceState = { };
+
+        /**
+         * A map that stores the source name of a track identified by it's ssrc.
+         * We store the mapping when jingle is received, and later is used
+         * onaddstream webrtc event where we have only the ssrc
+         * FIXME: This map got filled and never cleaned and can grow during long
+         * conference
+         * @type {Map<number, string>} maps SSRC number to source name
+         */
+        this._sourceNames = new Map();
     }
 
     /**
@@ -236,6 +244,14 @@ export default class SignalingLayerImpl extends SignalingLayer {
             const endpointId = Strophe.getResourceFromJid(jid);
 
             delete this._remoteSourceState[endpointId];
+
+            if (FeatureFlags.isSourceNameSignalingEnabled()) {
+                for (const [ key, value ] of this.ssrcOwners.entries()) {
+                    if (value === endpointId) {
+                        delete this._sourceNames[key];
+                    }
+                }
+            }
         };
 
         room.addEventListener(XMPPEvents.MUC_MEMBER_LEFT, this._memberLeftHandler);
@@ -345,8 +361,10 @@ export default class SignalingLayerImpl extends SignalingLayer {
 
         // Now signaling layer instance is shared between different JingleSessionPC instances, so although very unlikely
         // an SSRC conflict could potentially occur. Log a message to make debugging easier.
-        if (this.ssrcOwners.has(ssrc)) {
-            logger.error(`SSRC owner re-assigned from ${this.ssrcOwners.get(ssrc)} to ${endpointId}`);
+        const existingOwner = this.ssrcOwners.get(ssrc);
+
+        if (existingOwner && existingOwner !== endpointId) {
+            logger.error(`SSRC owner re-assigned from ${existingOwner} to ${endpointId}`);
         }
         this.ssrcOwners.set(ssrc, endpointId);
     }
@@ -393,4 +411,34 @@ export default class SignalingLayerImpl extends SignalingLayer {
             this._addLocalSourceInfoToPresence();
         }
     }
+
+    /**
+     * @inheritDoc
+     */
+    getTrackSourceName(ssrc) {
+        return this._sourceNames.get(ssrc);
+    }
+
+    /**
+     * Saves the source name for a track identified by it's ssrc.
+     * @param {number} ssrc the ssrc of the target track.
+     * @param {SourceName} sourceName the track's source name to save.
+     * @throws TypeError if <tt>ssrc</tt> is not a number
+     */
+    setTrackSourceName(ssrc, sourceName) {
+        if (typeof ssrc !== 'number') {
+            throw new TypeError(`SSRC(${ssrc}) must be a number`);
+        }
+
+        // Now signaling layer instance is shared between different JingleSessionPC instances, so although very unlikely
+        // an SSRC conflict could potentially occur. Log a message to make debugging easier.
+        const existingName = this._sourceNames.get(ssrc);
+
+        if (existingName && existingName !== sourceName) {
+            logger.error(`SSRC(${ssrc}) sourceName re-assigned from ${existingName} to ${sourceName}`);
+        }
+
+        this._sourceNames.set(ssrc, sourceName);
+    }
+
 }

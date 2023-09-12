@@ -26,7 +26,7 @@ module.exports = (_env, argv) => {
             },
             mode,
             output: {
-                filename: 'lib-jitsi-meet.e2ee-worker.js',
+                filename: 'lib-jitsi-meet.8948.e2ee-worker.js',
                 path: path.join(process.cwd(), 'dist', 'umd')
             },
             optimization: {

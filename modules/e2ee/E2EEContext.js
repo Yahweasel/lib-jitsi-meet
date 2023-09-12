@@ -37,7 +37,7 @@ export default class E2EEcontext {
             baseUrl = `${ljm.src.substring(0, idx)}/`;
         }
 
-        let workerUrl = `${baseUrl}lib-jitsi-meet.e2ee-worker.js`;
+        let workerUrl = `${baseUrl}lib-jitsi-meet.8948.e2ee-worker.js`;
 
         // If there is no baseUrl then we create the worker in a normal way
         // as you cant load scripts inside blobs from relative paths.

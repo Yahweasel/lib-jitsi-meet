@@ -4,7 +4,7 @@ import { MediaDirection } from '../../service/RTC/MediaDirection';
 import { MediaType } from '../../service/RTC/MediaType';
 
 import SDPUtil from './SDPUtil';
-import { parseSecondarySSRC, SdpTransformWrap } from './SdpTransformUtil';
+import { SdpTransformWrap, parseSecondarySSRC } from './SdpTransformUtil';
 
 const logger = getLogger(__filename);
 
@@ -42,7 +42,7 @@ function updateAssociatedRtxStream(mLine, primarySsrcInfo, rtxSsrc) {
         attribute: 'cname',
         value: primarySsrcCname
     });
-    mLine.addSSRCAttribute({
+    primarySsrcMsid && mLine.addSSRCAttribute({
         id: rtxSsrc,
         attribute: 'msid',
         value: primarySsrcMsid

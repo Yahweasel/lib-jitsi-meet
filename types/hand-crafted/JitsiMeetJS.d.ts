@@ -1,4 +1,4 @@
-import Logger from 'jitsi-meet-logger';
+import Logger from '@jitsi/logger';
 import JitsiConnection from './JitsiConnection';
 import JitsiMediaDevices from './JitsiMediaDevices';
 import { JitsiConferenceErrors } from './JitsiConferenceErrors';
@@ -11,7 +11,6 @@ import { JitsiConnectionEvents } from './JitsiConnectionEvents';
 import { JitsiConferenceEvents } from './JitsiConferenceEvents';
 import { JitsiTranscriptionStatus } from './JitsiTranscriptionStatus';
 import BrowserCapabilities from './modules/browser/BrowserCapabilities';
-import { ParticipantConnectionStatus } from './modules/connectivity/ParticipantConnectionStatus';
 import { DetectionEvents } from './modules/detection/DetectionEvents';
 import TrackVADEmitter, { VADProcessor } from './modules/detection/TrackVADEmitter';
 import RecordingConstants from './modules/recording/recordingConstants';
@@ -69,7 +68,6 @@ export type JitsiMeetJSType = {
   //USER_MEDIA_SLOW_PROMISE_TIMEOUT: 1000;
 
   constants: {
-    participantConnectionStatus: typeof ParticipantConnectionStatus,
     recording: typeof RecordingConstants,
     sipVideoGW: typeof VideoSIPGWConstants,
     transcriptionStatus: typeof JitsiTranscriptionStatus,
@@ -95,7 +93,7 @@ export type JitsiMeetJSType = {
     JitsiTrackError: unknown // TODO:
   };
 
-  logLevels: typeof JitsiLogLevels; // TODO: code refers to Logger.levels and that is in jitsi-meet-logger
+  logLevels: typeof JitsiLogLevels; // TODO: code refers to Logger.levels and that is in @jitsi/logger
 
   mediaDevices: typeof JitsiMediaDevices;
 
@@ -138,8 +136,6 @@ export type JitsiMeetJSType = {
   getGlobalOnErrorHandler: ( message: string, source: string, lineno?: number, colno?: number, error?: Error ) => void;
 
   setNetworkInfo: ( { isOnline: boolean } ) => void;
-
-  setVideoTrackContentHints: ( track: MediaStreamTrack, hint: string ) => void;
 
   precallTest: PrecallTest;
 

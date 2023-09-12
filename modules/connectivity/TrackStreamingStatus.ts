@@ -39,7 +39,7 @@ export enum TrackStreamingStatus {
 
 type StreamingStatusMap = {
     // TODO: Replace this hand crafted VideoType when we convert VideoType.js to Typescript.
-    videoType?: VideoType, 
+    videoType?: VideoType,
     startedMs?: number,
     p2p?: boolean,
     streamingStatus?: string,
@@ -302,6 +302,7 @@ export class TrackStreamingStatusImpl {
             this.rtc.removeListener(RTCEvents.REMOTE_TRACK_UNMUTE, this._onTrackRtcUnmuted);
 
             this.track.off(JitsiTrackEvents.TRACK_MUTE_CHANGED, this._onSignallingMuteChanged);
+            this.track.off(JitsiTrackEvents.TRACK_VIDEOTYPE_CHANGED, this._onTrackVideoTypeChanged);
         }
 
         this.conference.off(JitsiConferenceEvents.FORWARDED_SOURCES_CHANGED, this._onForwardedSourcesChanged);
@@ -480,9 +481,6 @@ export class TrackStreamingStatusImpl {
 
         const sourceName = this.track.getSourceName();
 
-        logger.debug(`Fowarded sources changed leaving=${leavingForwardedSources}, entering=${
-            enteringForwardedSources} at ${timestamp}`);
-
         // If the browser doesn't fire the mute/onmute events when the remote peer stops/starts sending media,
         // calculate the streaming status for all the tracks since it won't get triggered automatically on the track
         // that has started/stopped receiving media.
@@ -583,7 +581,7 @@ export class TrackStreamingStatusImpl {
             const timeout = this._getVideoFrozenTimeout();
 
             this.trackTimer = window.setTimeout(() => {
-                logger.debug(`Set RTC mute timeout for: ${sourceName} of ${timeout} ms`);
+                logger.debug(`Set track RTC muted for: ${sourceName} after the timeout of ${timeout} ms`);
                 this.clearTimeout();
                 this.figureOutStreamingStatus();
             }, timeout);
